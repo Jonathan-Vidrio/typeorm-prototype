@@ -2,6 +2,7 @@ import { PartialType } from '@nestjs/mapped-types';
 import { CreateBookDto } from './create-book.dto';
 
 export class UpdateBookDto extends PartialType(CreateBookDto) {
+  readonly Id?: number;
   readonly ISBN?: string;
   readonly Title?: string;
   readonly Subtitle?: string;

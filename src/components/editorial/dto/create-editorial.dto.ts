@@ -6,6 +6,4 @@ export class CreateEditorialDto {
   readonly Email: string;
   readonly Website: string;
   readonly StatusId?: number;
-  readonly createdAt?: Date;
-  readonly updatedAt?: Date;
 }

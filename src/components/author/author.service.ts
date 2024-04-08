@@ -15,7 +15,15 @@ export class AuthorService {
   ) {}
 
   async create(createAuthorDto: CreateAuthorDto): Promise<Author> {
-    return await this.authorRepository.save(createAuthorDto);
+    const author = this.authorRepository.create(createAuthorDto);
+
+    if (!createAuthorDto.StatusId) {
+      author.Status = await this.statusRepository.findOne({
+        where: { Id: 1 },
+      });
+    }
+
+    return await this.authorRepository.save(author);
   }
 
   async findAll(): Promise<Author[]> {
@@ -32,25 +40,27 @@ export class AuthorService {
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto): Promise<Author> {
-    const author = await this.authorRepository.findOne({ where: { Id: id } });
+    const author = await this.findOne(id);
 
-    if (updateAuthorDto.StatusId) {
-      author.Status = await this.statusRepository.findOne({
-        where: { Id: updateAuthorDto.StatusId },
-      });
+    if (author) {
+      if (updateAuthorDto.StatusId) {
+        author.Status = await this.statusRepository.findOne({
+          where: { Id: updateAuthorDto.StatusId },
+        });
+      }
+
+      Object.assign(author, updateAuthorDto);
+
+      return await this.authorRepository.save(author);
     }
-
-    Object.assign(author, updateAuthorDto);
-
-    return await this.authorRepository.save(author);
   }
   async remove(id: number): Promise<Author> {
-    const author = await this.authorRepository.findOne({ where: { Id: id } });
+    const author = await this.findOne(id);
 
     if (author) {
       await this.authorRepository.delete(id);
-    }
 
-    return author;
+      return author;
+    }
   }
 }

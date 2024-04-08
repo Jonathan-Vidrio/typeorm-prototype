@@ -15,41 +15,56 @@ export class CategoryService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    return await this.categoryRepository.save(createCategoryDto);
+    const category = this.categoryRepository.create(createCategoryDto);
+
+    if (!createCategoryDto.StatusId) {
+      category.Status = await this.statusRepository.findOne({
+        where: { Id: 1 },
+      });
+    }
+
+    return await this.categoryRepository.save(category);
   }
 
   async findAll(): Promise<Category[]> {
-    return await this.categoryRepository.find();
+    return await this.categoryRepository.find({
+      relations: ['Status'],
+    });
   }
 
   async findOne(id: number): Promise<Category> {
-    return await this.categoryRepository.findOneBy({ Id: id });
+    return await this.categoryRepository.findOne({
+      where: { Id: id },
+      relations: ['Status'],
+    });
   }
 
   async update(
     id: number,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    const category = await this.categoryRepository.findOneBy({ Id: id });
+    const category = await this.findOne(id);
 
-    if (updateCategoryDto.StatusId) {
-      category.Status = await this.statusRepository.findOne({
-        where: { Id: updateCategoryDto.StatusId },
-      });
+    if (category) {
+      if (updateCategoryDto.StatusId) {
+        category.Status = await this.statusRepository.findOne({
+          where: { Id: updateCategoryDto.StatusId },
+        });
+      }
+
+      Object.assign(category, updateCategoryDto);
+
+      return await this.categoryRepository.save(category);
     }
-
-    Object.assign(category, updateCategoryDto);
-
-    return await this.categoryRepository.save(category);
   }
 
   async remove(id: number): Promise<Category> {
-    const category = await this.categoryRepository.findOneBy({ Id: id });
+    const category = await this.findOne(id);
 
     if (category) {
       await this.categoryRepository.delete(id);
-    }
 
-    return category;
+      return category;
+    }
   }
 }

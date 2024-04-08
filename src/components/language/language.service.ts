@@ -15,41 +15,56 @@ export class LanguageService {
   ) {}
 
   async create(createLanguageDto: CreateLanguageDto): Promise<Language> {
-    return await this.languageRepository.save(createLanguageDto);
+    const language = this.languageRepository.create(createLanguageDto);
+
+    if (!createLanguageDto.StatusId) {
+      language.Status = await this.statusRepository.findOne({
+        where: { Id: 1 },
+      });
+    }
+
+    return await this.languageRepository.save(language);
   }
 
   async findAll(): Promise<Language[]> {
-    return await this.languageRepository.find();
+    return await this.languageRepository.find({
+      relations: ['Status'],
+    });
   }
 
   async findOne(id: number): Promise<Language> {
-    return await this.languageRepository.findOneBy({ Id: id });
+    return await this.languageRepository.findOne({
+      where: { Id: id },
+      relations: ['Status'],
+    });
   }
 
   async update(
     id: number,
     updateLanguageDto: UpdateLanguageDto,
   ): Promise<Language> {
-    const language = await this.languageRepository.findOneBy({ Id: id });
+    const language = await this.findOne(id);
 
-    if (updateLanguageDto.StatusId) {
-      language.Status = await this.statusRepository.findOne({
-        where: { Id: updateLanguageDto.StatusId },
-      });
+    if (language) {
+      if (updateLanguageDto.StatusId) {
+        language.Status = await this.statusRepository.findOne({
+          where: { Id: updateLanguageDto.StatusId },
+        });
+      }
+
+      Object.assign(language, updateLanguageDto);
+
+      return await this.languageRepository.save(language);
     }
-
-    Object.assign(language, updateLanguageDto);
-
-    return await this.languageRepository.save(language);
   }
 
   async remove(id: number): Promise<Language> {
-    const language = await this.languageRepository.findOneBy({ Id: id });
+    const language = await this.findOne(id);
 
     if (language) {
       await this.languageRepository.delete(id);
-    }
 
-    return language;
+      return language;
+    }
   }
 }

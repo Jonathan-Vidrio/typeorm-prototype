@@ -15,45 +15,56 @@ export class EditorialService {
   ) {}
 
   async create(createEditorialDto: CreateEditorialDto): Promise<Editorial> {
-    return await this.editorialRepository.save(createEditorialDto);
+    const editorial = this.editorialRepository.create(createEditorialDto);
+
+    if (!createEditorialDto.StatusId) {
+      editorial.Status = await this.statusRepository.findOne({
+        where: { Id: 1 },
+      });
+    }
+
+    return await this.editorialRepository.save(editorial);
   }
 
   async findAll(): Promise<Editorial[]> {
-    return await this.editorialRepository.find();
+    return await this.editorialRepository.find({
+      relations: ['Status'],
+    });
   }
 
   async findOne(id: number): Promise<Editorial> {
-    return await this.editorialRepository.findOneBy({ Id: id });
+    return await this.editorialRepository.findOne({
+      where: { Id: id },
+      relations: ['Status'],
+    });
   }
 
   async update(
     id: number,
     updateEditorialDto: UpdateEditorialDto,
   ): Promise<Editorial> {
-    const editorial = await this.editorialRepository.findOne({
-      where: { Id: id },
-    });
+    const editorial = await this.findOne(id);
 
-    if (updateEditorialDto.StatusId) {
-      editorial.Status = await this.statusRepository.findOne({
-        where: { Id: updateEditorialDto.StatusId },
-      });
+    if (editorial) {
+      if (updateEditorialDto.StatusId) {
+        editorial.Status = await this.statusRepository.findOne({
+          where: { Id: updateEditorialDto.StatusId },
+        });
+      }
+
+      Object.assign(editorial, updateEditorialDto);
+
+      return await this.editorialRepository.save(editorial);
     }
-
-    Object.assign(editorial, updateEditorialDto);
-
-    return await this.editorialRepository.save(editorial);
   }
 
   async remove(id: number): Promise<Editorial> {
-    const editorial = await this.editorialRepository.findOne({
-      where: { Id: id },
-    });
+    const editorial = await this.findOne(id);
 
     if (editorial) {
       await this.editorialRepository.delete(id);
-    }
 
-    return editorial;
+      return editorial;
+    }
   }
 }
