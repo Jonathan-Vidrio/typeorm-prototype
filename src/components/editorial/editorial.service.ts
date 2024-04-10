@@ -28,14 +28,14 @@ export class EditorialService {
 
   async findAll(): Promise<Editorial[]> {
     return await this.editorialRepository.find({
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
   async findOne(id: number): Promise<Editorial> {
     return await this.editorialRepository.findOne({
       where: { Id: id },
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
@@ -43,7 +43,9 @@ export class EditorialService {
     id: number,
     updateEditorialDto: UpdateEditorialDto,
   ): Promise<Editorial> {
-    const editorial = await this.findOne(id);
+    const editorial = await this.editorialRepository.findOne({
+      where: { Id: id },
+    });
 
     if (editorial) {
       if (updateEditorialDto.StatusId) {
@@ -59,7 +61,9 @@ export class EditorialService {
   }
 
   async remove(id: number): Promise<Editorial> {
-    const editorial = await this.findOne(id);
+    const editorial = await this.editorialRepository.findOne({
+      where: { Id: id },
+    });
 
     if (editorial) {
       await this.editorialRepository.delete(id);

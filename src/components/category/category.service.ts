@@ -28,14 +28,14 @@ export class CategoryService {
 
   async findAll(): Promise<Category[]> {
     return await this.categoryRepository.find({
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
   async findOne(id: number): Promise<Category> {
     return await this.categoryRepository.findOne({
       where: { Id: id },
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
@@ -43,7 +43,9 @@ export class CategoryService {
     id: number,
     updateCategoryDto: UpdateCategoryDto,
   ): Promise<Category> {
-    const category = await this.findOne(id);
+    const category = await this.categoryRepository.findOne({
+      where: { Id: id },
+    });
 
     if (category) {
       if (updateCategoryDto.StatusId) {
@@ -59,7 +61,9 @@ export class CategoryService {
   }
 
   async remove(id: number): Promise<Category> {
-    const category = await this.findOne(id);
+    const category = await this.categoryRepository.findOne({
+      where: { Id: id },
+    });
 
     if (category) {
       await this.categoryRepository.delete(id);

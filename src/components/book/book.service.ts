@@ -76,7 +76,7 @@ export class BookService {
   }
 
   async update(id: number, updateBookDto: UpdateBookDto): Promise<Book> {
-    const book = await this.findOne(id);
+    const book = await this.bookRepository.findOne({ where: { Id: id } });
 
     if (book) {
       if (updateBookDto.AuthorId) {
@@ -116,7 +116,7 @@ export class BookService {
   }
 
   async remove(id: number): Promise<Book> {
-    const book = await this.findOne(id);
+    const book = await this.bookRepository.findOne({ where: { Id: id } });
 
     if (book) {
       await this.bookRepository.delete(id);

@@ -16,15 +16,20 @@ export class StatusService {
   }
 
   async findAll(): Promise<Status[]> {
-    return await this.statusRepository.find();
+    return await this.statusRepository.find({ relations: ['Books'] });
   }
 
   async findOne(id: number): Promise<Status> {
-    return await this.statusRepository.findOneBy({ Id: id });
+    return await this.statusRepository.findOne({
+      where: { Id: id },
+      relations: ['Books'],
+    });
   }
 
   async update(id: number, updateStatusDto: UpdateStatusDto): Promise<Status> {
-    const status = await this.statusRepository.findOneBy({ Id: id });
+    const status = await this.statusRepository.findOne({
+      where: { Id: id },
+    });
 
     Object.assign(status, updateStatusDto);
 
@@ -32,7 +37,9 @@ export class StatusService {
   }
 
   async remove(id: number): Promise<Status> {
-    const deletedStatus = await this.findOne(id);
+    const deletedStatus = await this.statusRepository.findOne({
+      where: { Id: id },
+    });
 
     if (deletedStatus) {
       await this.statusRepository.delete(id);

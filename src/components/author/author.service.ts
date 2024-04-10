@@ -28,19 +28,19 @@ export class AuthorService {
 
   async findAll(): Promise<Author[]> {
     return await this.authorRepository.find({
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
   async findOne(id: number): Promise<Author> {
     return await this.authorRepository.findOne({
       where: { Id: id },
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto): Promise<Author> {
-    const author = await this.findOne(id);
+    const author = await this.authorRepository.findOne({ where: { Id: id } });
 
     if (author) {
       if (updateAuthorDto.StatusId) {
@@ -55,7 +55,7 @@ export class AuthorService {
     }
   }
   async remove(id: number): Promise<Author> {
-    const author = await this.findOne(id);
+    const author = await this.authorRepository.findOne({ where: { Id: id } });
 
     if (author) {
       await this.authorRepository.delete(id);

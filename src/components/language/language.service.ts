@@ -28,14 +28,14 @@ export class LanguageService {
 
   async findAll(): Promise<Language[]> {
     return await this.languageRepository.find({
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
   async findOne(id: number): Promise<Language> {
     return await this.languageRepository.findOne({
       where: { Id: id },
-      relations: ['Status'],
+      relations: ['Status', 'Books'],
     });
   }
 
@@ -43,7 +43,9 @@ export class LanguageService {
     id: number,
     updateLanguageDto: UpdateLanguageDto,
   ): Promise<Language> {
-    const language = await this.findOne(id);
+    const language = await this.languageRepository.findOne({
+      where: { Id: id },
+    });
 
     if (language) {
       if (updateLanguageDto.StatusId) {
@@ -59,7 +61,9 @@ export class LanguageService {
   }
 
   async remove(id: number): Promise<Language> {
-    const language = await this.findOne(id);
+    const language = await this.languageRepository.findOne({
+      where: { Id: id },
+    });
 
     if (language) {
       await this.languageRepository.delete(id);
